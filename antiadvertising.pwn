@@ -3,52 +3,54 @@
 stringContainsIP(const szStr[])
 {
 	new 
-		iDots, iColons, i = 0, trueIPInts = 0,
-		numberFound = -1, numLen = 0, numStr[4]
+		i = 0, ch, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
+		numberFound = -1, numLen = 0, numStr[4] // -225 (4 len)
 	;
-	while(szStr[i] != EOS)
+	while(i <= len)
 	{
-		if('0' <= szStr[i] <= '9')
+		ch = szStr[i];
+		switch(ch)
 		{
-			while(('0' <= szStr[i] <= '9') || szStr[i] == '.' || szStr[i] == ':' || szStr[i] == '_' || szStr[i] == ' ')
+			case '0'..'9', '-': // store negatives (-1.-1.-1.-1)
 			{
-				switch(szStr[i])
-				{
-					case '0'..'9':
-					{
-						if(numLen == 3) {
-							numLen = 0;
+				if(numIsValid) {
+					if(ch == '-') {
+						if(numLen == 0) {
+							isNumNegative = true;
 						} else {
-							numStr[numLen++] = szStr[i];
+							numIsValid = false;
 						}
 					}
-					case '.', '_': iDots++;
-					case ':': iColons++;
-					case ' ': i++; // skip whitespaces
+					if(numLen == (3 + _:isNumNegative)) { // IP Num is valid up to 4 characters.. -255
+						for(numLen = 3; numLen > 0; numLen--) {
+							numStr[numLen] = EOS;
+						}
+					} else {
+						numStr[numLen++] = ch;
+					}
 				}
-				if(!('0' <= szStr[i] <= '9') && numLen) {
+			}
+			default: // skip non +/-0-255
+			{
+				if(numLen && numIsValid) {
 					numberFound = strval(numStr);
 					if(numberFound >= 0 && numberFound <= 255) {
 						trueIPInts++;
 					}
+					//printf("numberFound: %d. numStr: %s. isNumNegative: %d", numberFound, numStr, isNumNegative);
 					for(numLen = 3; numLen > 0; numLen--) { // strdel(numStr, 0, 3); // numStr[numLen] = EOS; ... they just won't work d:
 						numStr[numLen] = EOS;
 					} // numLen goes back to 0!
+					isNumNegative = false;
+				} else {
+					numIsValid = true;
 				}
-				i++;
 			}
-		}
-		if(iDots >= 3 && iColons == 1 && trueIPInts >= 4) {
-			return 1;
-		} else {
-			iDots = 0;
-			numLen = 0;
-			numStr[numLen] = EOS;
-			numberFound = -1;
 		}
 		i++;
 	}
-	return 0;
+	//printf("trueIPInts: %d", trueIPInts);
+	return (trueIPInts >= 4);
 }
 
 main() {}
@@ -56,6 +58,8 @@ main() {}
 public OnGameModeInit()
 {
 	new str[64];
+
+	// Valid
 	str = "000.000.000.000:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "0.0.0.0:7777";
@@ -66,11 +70,19 @@ public OnGameModeInit()
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "255.255.255.255:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
+	str = "PLS COME JOIN SERVER 37____187____22____119";
+	printf("%s - %d.", str, stringContainsIP(str));
+	str = "PLS COME JOIN SERVER 37 $$$$ 187 $$$$ 22 $$$$ 119";
+	printf("%s - %d.", str, stringContainsIP(str));
+
+	// Invalid
 	str = "0000.000.000.0000:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "255.256.255.255:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "-1.-1.-1.-1:7777";
+	printf("%s - %d.", str, stringContainsIP(str));
+	str = "1-1.1-1.1-1.1-1:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
 	return 1;
 }
