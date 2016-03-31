@@ -16,20 +16,24 @@ stringContainsIP(const szStr[])
 				{
 					case '0'..'9':
 					{
-						numberFound = strval(numStr);
-						if(numberFound >= 0 && numberFound <= 255) {
-							trueIPInts++;
+						if(numLen == 3) {
+							numLen = 0;
+						} else {
+							numStr[numLen++] = szStr[i];
 						}
-						for(numLen = 3; numLen > 0; numLen--) { // strdel(numStr, 0, 3); // numStr[numLen] = EOS; ... they just won't work d:
-							numStr[numLen] = EOS;
-						} // numLen goes back to 0!
 					}
 					case '.', '_': iDots++;
 					case ':': iColons++;
-					default:
-					{
-						numStr[numLen++] = szStr[i];
+					case ' ': i++; // skip whitespaces
+				}
+				if(!('0' <= szStr[i] <= '9') && numLen) {
+					numberFound = strval(numStr);
+					if(numberFound >= 0 && numberFound <= 255) {
+						trueIPInts++;
 					}
+					for(numLen = 3; numLen > 0; numLen--) { // strdel(numStr, 0, 3); // numStr[numLen] = EOS; ... they just won't work d:
+						numStr[numLen] = EOS;
+					} // numLen goes back to 0!
 				}
 				i++;
 			}
@@ -52,9 +56,9 @@ main() {}
 public OnGameModeInit()
 {
 	new str[64];
-	str = "000.000.000.000";
+	str = "000.000.000.000:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
-	str = "0.0.0.0";
+	str = "0.0.0.0:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "127.0.0.1:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
@@ -62,6 +66,11 @@ public OnGameModeInit()
 	printf("%s - %d.", str, stringContainsIP(str));
 	str = "255.255.255.255:7777";
 	printf("%s - %d.", str, stringContainsIP(str));
-	str = "255.255.255.255";
+	str = "0000.000.000.0000:7777";
+	printf("%s - %d.", str, stringContainsIP(str));
+	str = "255.256.255.255:7777";
+	printf("%s - %d.", str, stringContainsIP(str));
+	str = "-1.-1.-1.-1:7777";
+	printf("%s - %d.", str, stringContainsIP(str));
 	return 1;
 }
