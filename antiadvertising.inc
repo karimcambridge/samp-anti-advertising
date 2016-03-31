@@ -1,6 +1,31 @@
-#include <a_samp>
+/*
+	Copyright 2016 Kar
 
-stringContainsIP(const szStr[])
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+	   http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+
+	stringContainsIP(const szStr[]);
+
+	This include accurately detects if an IP is in a string.
+
+	Created by Kar on Wednesday, March 30th, 2016.
+*/
+
+#if defined _INC_ANTI_ADVERTISING
+	#endinput
+#endif
+#define _INC_ANTI_ADVERTISING
+
+stock stringContainsIP(const szStr[])
 {
 	new 
 		i = 0, ch, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
@@ -35,7 +60,9 @@ stringContainsIP(const szStr[])
 				if(numLen && numIsValid) {
 					numberFound = strval(numStr);
 					if(numberFound >= 0 && numberFound <= 255) {
-						trueIPInts++;
+						if(++trueIPInts >= 4) {
+							break;
+						}
 					}
 					//printf("numberFound: %d. numStr: %s. isNumNegative: %d", numberFound, numStr, isNumNegative);
 					for(numLen = 3; numLen > 0; numLen--) { // strdel(numStr, 0, 3); // numStr[numLen] = EOS; ... they just won't work d:
@@ -51,38 +78,4 @@ stringContainsIP(const szStr[])
 	}
 	//printf("trueIPInts: %d", trueIPInts);
 	return (trueIPInts >= 4);
-}
-
-main() {}
-
-public OnGameModeInit()
-{
-	new str[64];
-
-	// Valid
-	str = "000.000.000.000:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "0.0.0.0:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "127.0.0.1:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "127  .  0.  0.  1:  7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "255.255.255.255:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "PLS COME JOIN SERVER 37____187____22____119";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "PLS COME JOIN SERVER 37 $$$$ 187 $$$$ 22 $$$$ 119";
-	printf("%s - %d.", str, stringContainsIP(str));
-
-	// Invalid
-	str = "0000.000.000.0000:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "255.256.255.255:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "-1.-1.-1.-1:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	str = "1-1.1-1.1-1.1-1:7777";
-	printf("%s - %d.", str, stringContainsIP(str));
-	return 1;
 }
