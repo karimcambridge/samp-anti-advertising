@@ -25,7 +25,7 @@
 #endif
 #define _INC_ANTI_ADVERTISING
 
-stock stringContainsIP(const szStr[])
+stock stringContainsIP(const szStr[], bool:ignoreNegatives = false) // , bool:fixedSeparation = true, bool:ipMustHavePort = true
 {
 	new 
 		i = 0, ch, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
@@ -40,9 +40,10 @@ stock stringContainsIP(const szStr[])
 			{
 				if(numIsValid) {
 					if(ch == '-') {
-						if(numLen == 0) {
+						if(numLen == 0 && ignoreNegatives) {
 							isNumNegative = true;
-						} else {
+						}
+						else if(numLen > 0) {
 							numIsValid = false;
 						}
 					}
@@ -50,6 +51,10 @@ stock stringContainsIP(const szStr[])
 						for(numLen = 3; numLen > 0; numLen--) {
 							numStr[numLen] = EOS;
 						}
+					}
+					else if(ch == '-' && !ignoreNegatives) {
+						i++;
+						continue;
 					} else {
 						numStr[numLen++] = ch;
 					}
