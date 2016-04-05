@@ -13,7 +13,7 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 
-	stringContainsIP(const szStr[]);
+	stringContainsIP(const szStr[], bool:ignoreNegatives = false);
 
 	This include accurately detects if an IP is in a string.
 
@@ -25,22 +25,23 @@
 #endif
 #define _INC_ANTI_ADVERTISING
 
-stock stringContainsIP(const szStr[], bool:ignoreNegatives = false) // , bool:fixedSeparation = true, bool:ipMustHavePort = true
+stock stringContainsIP(const szStr[], bool:ignoreNegatives = false)
 {
 	new 
-		i = 0, ch, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
-		numberFound = -1, numLen = 0, numStr[4] // -225 (4 len)
+		i = 0, ch, lastCh, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
+		numberFound = -1, numLen = 0, numStr[5] // -225\0 (4 len)
 	;
 	while(i <= len)
 	{
+		lastCh = ch;
 		ch = szStr[i];
 		switch(ch)
 		{
-			case '0'..'9', '-': // store negatives (-1.-1.-1.-1)
+			case '0'..'9':
 			{
 				if(numIsValid) {
-					if(ch == '-') {
-						if(numLen == 0 && ignoreNegatives) {
+					if(lastCh == '-') {
+						if(numLen == 0 && ignoreNegatives == false) {
 							isNumNegative = true;
 						}
 						else if(numLen > 0) {
@@ -52,10 +53,13 @@ stock stringContainsIP(const szStr[], bool:ignoreNegatives = false) // , bool:fi
 							numStr[numLen] = EOS;
 						}
 					}
-					else if(ch == '-' && !ignoreNegatives) {
+					else if(lastCh == '-' && ignoreNegatives) {
 						i++;
 						continue;
 					} else {
+						if(numLen == 0 && numIsValid == true && isNumNegative == true && lastCh == '-') {
+							numStr[numLen++] = lastCh;
+						}
 						numStr[numLen++] = ch;
 					}
 				}
@@ -64,12 +68,11 @@ stock stringContainsIP(const szStr[], bool:ignoreNegatives = false) // , bool:fi
 			{
 				if(numLen && numIsValid) {
 					numberFound = strval(numStr);
-					if(numberFound >= 0 && numberFound <= 255) {
+					if(numberFound >= -255 && numberFound <= 255) {
 						if(++trueIPInts >= 4) {
 							break;
 						}
 					}
-					//printf("numberFound: %d. numStr: %s. isNumNegative: %d", numberFound, numStr, isNumNegative);
 					for(numLen = 3; numLen > 0; numLen--) { // strdel(numStr, 0, 3); // numStr[numLen] = EOS; ... they just won't work d:
 						numStr[numLen] = EOS;
 					} // numLen goes back to 0!
@@ -81,6 +84,5 @@ stock stringContainsIP(const szStr[], bool:ignoreNegatives = false) // , bool:fi
 		}
 		i++;
 	}
-	//printf("trueIPInts: %d", trueIPInts);
 	return (trueIPInts >= 4);
 }
