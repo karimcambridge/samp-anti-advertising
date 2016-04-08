@@ -25,11 +25,11 @@
 #endif
 #define _INC_ANTI_ADVERTISING
 
-stock stringContainsIP(const szStr[], bool:ignoreNegatives = false)
+stock stringContainsIP(const szStr[], bool:fixedSeparation = true, bool:ignoreNegatives = false)
 {
 	new 
 		i = 0, ch, lastCh, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
-		numberFound = -1, numLen = 0, numStr[5] // -225\0 (4 len)
+		numberFound = -1, numLen = 0, numStr[5], lastSpacingPos = -1, numSpacingDiff, numLastSpacingDiff, numSpacingDiffCount // -225\0 (4 len)
 	;
 	while(i <= len)
 	{
@@ -69,6 +69,16 @@ stock stringContainsIP(const szStr[], bool:ignoreNegatives = false)
 				if(numLen && numIsValid) {
 					numberFound = strval(numStr);
 					if(numberFound >= -255 && numberFound <= 255) {
+						if(fixedSeparation) {
+							if(lastSpacingPos != -1) {
+								numLastSpacingDiff = numSpacingDiff;
+								numSpacingDiff = i - lastSpacingPos - numLen;
+								if(trueIPInts == 1 || numSpacingDiff == numLastSpacingDiff) {
+									++numSpacingDiffCount;
+								}
+							}
+							lastSpacingPos = i;
+						}
 						if(++trueIPInts >= 4) {
 							break;
 						}
@@ -83,6 +93,9 @@ stock stringContainsIP(const szStr[], bool:ignoreNegatives = false)
 			}
 		}
 		i++;
+	}
+	if(fixedSeparation == true && numSpacingDiffCount < 3) {
+		return 0;
 	}
 	return (trueIPInts >= 4);
 }
