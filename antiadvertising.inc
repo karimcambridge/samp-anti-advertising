@@ -29,14 +29,15 @@ stock stringContainsIP(const szStr[144], bool:fixedSeparation = false, bool:igno
 {
 	new 
 		i = 0, ch, lastCh, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
-		numberFound = -1, numLen = 0, numStr[5], lastSpacingPos = -1, numSpacingDiff, numLastSpacingDiff, numSpacingDiffCount // -225\0 (4 len)
+		numberFound = -1, numLen = 0, numStr[5], numSize = sizeof(numStr),
+		lastSpacingPos = -1, numSpacingDiff, numLastSpacingDiff, numSpacingDiffCount // -225\0 (4 len)
 	;
 	while(i <= len)
 	{
 		lastCh = ch;
 		ch = szStr[i];
 		if(ch >= '0' && ch <= '9' || (ranges == true && ch == '*')) {
-			if(numIsValid) {
+			if(numIsValid && numLen < numSize) {
 				if(lastCh == '-') {
 					if(numLen == 0 && ignoreNegatives == false) {
 						isNumNegative = true;
