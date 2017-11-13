@@ -17,7 +17,7 @@
 
 	This include accurately detects if an IP is in a string.
 
-	Created by Kar on Wednesday, March 30th, 2016.
+	Created by Kar on Wednesday, November 13th, 2017.
 */
 
 #if defined _INC_ANTI_ADVERTISING
@@ -25,7 +25,7 @@
 #endif
 #define _INC_ANTI_ADVERTISING
 
-stock stringContainsIP(const szStr[144], bool:fixedSeparation = false, bool:ignoreNegatives = false, bool:ranges = true) // bool:ipMustHavePort = true
+stock stringContainsIP(const szStr[], bool:fixedSeparation = false, bool:ignoreNegatives = false, bool:ranges = true) // bool:ipMustHavePort = true
 {
 	new 
 		i = 0, ch, lastCh, len = strlen(szStr), trueIPInts = 0, bool:isNumNegative = false, bool:numIsValid = true, // Invalid numbers are 1-1
